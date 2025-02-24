@@ -7,7 +7,7 @@ tic
 ; read parameters file
 dir = ROUTINE_DIR() 
 savedir = '/home2/bstadler/ALASCA_LEO/'
-params_file = 'params_alasca_leo_sh_240.pro'
+params_file = 'params_alasca_leo_sh.pro'
 params = read_params_file(dir+params_file)
 
 
