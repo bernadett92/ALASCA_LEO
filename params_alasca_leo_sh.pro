@@ -3,6 +3,8 @@
  instrument_name:   'ALASCA_LEO'               ; this is 'CaNaPy' to be compatible with the CaNaPy calibration of 589nm path
  pixel_pupil:       120,                   ; Linear dimension of pupil phase array
  pixel_pitch:       0.008333,              ; [m] Pitch of the pupil phase array
+ pad_size:          2048,                   ; number of pixels for zero padding, if smaller than pixle_pupil no padding applied
+ ;apodization:       0.9,                   ; alpha (between 0 and 1) for Hanning window, if 0 no apodization applied
  total_time:        1.0000d,                ; [s] Total simulation running time
  time_step:         0.0005d,                ; [s] Simulation time step
  zenithAngleInDeg:  60.0,
@@ -14,17 +16,9 @@
 {DM,
     ifunc_tag  : 'CaNaPy_30cm_dm_zonal_ifunc_120pix'        ; modes-to-commands matrix tag
     m2c_tag    : 'CaNaPy_30cm_dm_m2c_68masters_66modes'     ; DM command-to-phase influence matrix tag
-    nmodes     : 19
+    nmodes     : 8
     height     : 0                           ; DM height [m]
 }
-{DM_UP,
- type:              'zernike',             ; modes type
- nmodes:            2,                     ; number of modes
- npixels:           120,                   ; linear dimension of DM phase array
- obsratio:          0.0,                   ; obstruction dimension ratio w.r.t. diameter
- height:            0                      ; DM height [m]
-}
-
 
 ; --------------------------- Extended object LGS ---------------------------
 ; spot elongation
@@ -70,17 +64,17 @@
 
 
 ; --------------------------- Wavefront sensors ---------------------------
-{sh_lgs,
+{sh,
   wavelengthInNm:     589,
   sensor_fov:         10.0,                
   sensor_pxscale:     10.0/24.,            ; [arcsec] WFS pixel FoV (the WFS Fov is sensor_pxscale*sensor_npx)
   sensor_npx:         24,                 ; no. pixels on the side of the subaperture
   subap_on_diameter:  10,                 ; no. pixels on the diameter of the pupil
-  energy_th:          0.5,                ; energy threshold for including subapertures (relative)
+  energy_th:          0.25,                ; energy threshold for including subapertures (relative)
   subapdata_tag:      'auto'   
 }
-{slopec_lgs,
-  subapdata_tag: 'auto',                  ; tag of the sub-apertures used by the WFS
+{slopec,
+  subapdata_tag: 'ALASCA_LEO_ps120p0.008_shs10x10_wl589_fv10.0_np24_th0.50',                  ; tag of the sub-apertures used by the WFS
   sn_tag:        'auto',                  ; tag of the reference slope vector
   thr_value    : 0.0,                     ; [ph] threshold value used in the slope computation (only pixels with photons above this value used in computation)
   weightedPixRad: 1B,
@@ -91,14 +85,14 @@
   sensor_pxscale:    10.0/24.,            ; [arcsec] WFS pixel FoV (the WFS Fov is sensor_pxscale*sensor_npx)
   sensor_npx:        24,                  ; no. pixels on the side of the subaperture
   subap_on_diameter: 10,                   ; no. pixels on the diameter of the pupil
-  energy_th:         0.5,                 ; energy threshold for including subapertures (relative)
+  energy_th:         0.25,                 ; energy threshold for including subapertures (relative)
   subapdata_tag:     'auto'   
 }
-{slopec_ngs,
+{slopec_IR_ngs,
   subapdata_tag: 'auto',                  ; tag of the sub-apertures used by the WFS
   sn_tag       : 'auto',                  ; tag of the reference slope vector
   thr_value    :  0.0,                     ; [ph] threshold value used in the slope computation
-  weightedPixRad: 0B,
+  weightedPixRad: 1B,
 }
 
 ; --------------------------- Detectors ---------------------------
@@ -110,16 +104,19 @@
    readout_noise:     1b,                    ; activate readout noise
    readout_level:     0.8,                   ; readout noise in [e-/pix/frame]
    quantum_eff:       1.0,                    ; quantum efficiency * total transmission
-   verbose:           0b
+   background_noise:  1b,                  ; sky background value in e-/pix/frame (computed by ccd auto_params_management method)
+   excess_noise:      1b,                  ; activate Excess noise of sqrt(2.) characteristic of EMCCDs
 }
 {detector_IR_ngs,
   size:              [240,240],             ; Detector size in pixels
   dt:                0.0005d,               ; [s] Detector integration time
-  bandw:             300,                   ; [nm] Sensor bandwidth
+  bandw:             10,                   ; [nm] Sensor bandwidth
   photon_noise:      1b,                    ; activate photon noise
   readout_noise:     1b,                    ; activate readout noise
   readout_level:     0.8,                   ; readout noise in [e-/pix/frame]
   quantum_eff:       1.0                    ; quantum efficiency * total transmission
+  background_noise:  1b,                  ; sky background value in e-/pix/frame (computed by ccd auto_params_management method)
+  excess_noise:      1b,                  ; activate Excess noise of sqrt(2.) characteristic of EMCCDs
 }
 
 
@@ -142,7 +139,7 @@
 {modalrec,
    intmat_tag:        'auto'                 ; interaction matrix tag
    recmat_tag:        'auto'                 ; reconstruction matrix tag
-   nmodes:             19
+   nmodes:             8
 }
 {modalrec_tt, ; to get TT seen by LGS on jitter mirror
   intmat_tag:        'auto'                     ; interaction matrix tag
@@ -152,7 +149,7 @@
 {modalrec_IR_ngs,
    intmat_tag:        'auto'       ; reconstruction matrix tag
    recmat_tag:        'auto'       ; reconstruction matrix tag
-   nmodes:             19
+   nmodes:             8
 }
 
 
@@ -160,35 +157,45 @@
 {control,
   delay:             1,                     ; Total temporal delay in time steps
   type:              'INT',                 ; type of control 
-  int_gain:         [0.6,0.6,0.4,0.4,replicate(0.3,15)]   ; Integrator gain (for 'INT' control)
+  int_gain:         [0.6,0.6,replicate(0.3,6)]   ; Integrator gain (for 'INT' control)
 }
-{control_IR_ngs,
+{control_IR_ngs,x
   delay:             1,                     ; Total temporal delay in time steps
   type:              'INT',                 ; type of control
-  int_gain:         [0.6,0.6,replicate(0.0,17)]   ; Integrator gain (for 'INT' control)
+  ;int_gain:         [0.8,0.8,0.,0.,replicate(0.,4)]    ; Integrator gain (for 'INT' control)
+  int_gain:         [0.8,0.8,replicate(0.4,6)]    ; optgains 
 }
 
 
 ; --------------------------- Atmosphere ---------------------------
 {atmo,
-   L0:                30,                   ; [m] Outer scale
-   heights:           [0,4e3,12e3,20e3] ; Durham 5layer atm
-   Cn2:               [0.769,0.104,0.126,0.0] ; Durham 5layer atm
-   pixel_phasescreens: 32768L*2                ; size of the phase screen array. Max: 32768L ; Default is 8192L
+   L0:                25,                   ; [m] Outer scale
+   ;heights:           [955.53979, 7300.5816, 12353.543, 16227.363, 21897.079] ; Durham 5layer atm
+   ;Cn2:               [0.85374713, 0.049742997, 0.073054083, 0.021873636, 0.0015821513] ; Durham 5layer atm
+   heights:           [0,4e3,12e3,20e3] ; TURBO50
+   Cn2:               [0.769,0.104,0.126,0.0] ; TURBO50
+   ;heights:           [124.34, 7.31e3, 1.26e4, 1.65e4, 2.25e4] ; Durham 5layer atm (daytime)
+   ;Cn2:               [0.9793, 0.0087, 0.0108, 0.0011, 7.7447e-5] ; Durham 5layer atm (daytime) - weights (total must be eq 1)
+   pixel_phasescreens: 2*32768L                ; size of the phase screen array. Max: 32768L ; Default is 8192L
    fov_in_m      :   8
-   infinte_phasescreen : 0B 
+   infinte_phasescreen : 1B 
 }
 {seeing,
-  constant:         0.9759*0.5/(0.06*4.848)   ; ["] seeing=0.9759*0.5/(r0*4.848)
-}
-{wind_speed,
-  ;constant :        [3.541,84.948,242.644,387.745] ; Durham 5layer atm
-  constant :        [3.541,8.399,12.997,5.0] ; Durham 5layer atm
-}
-{wind_direction,
-  constant:         [0.,0.,0.,0.]   ; [degrees] Wind direction value
+  constant:        0.9759*0.5/(0.06*4.848)  ; ["] seeing=0.9759*0.5/(r0*4.848), 0.9759*0.5/(0.06*4.848)
+  ;constant:        1.0
 }
 
+{wind_speed,
+  ;constant :        [7.62, 12.52, 10.80, 7.56, 10.45] ; Durham 5layer atm
+  ;constant :        [2.9307, 13.5419, 12.6838, 7.2461, 5.7461] ; Durham 5layer atm
+  ;constant :        [4.2662430,140.14532,241.47957,315.80447] ; TURBO50 slewing
+  constant :        [3.541,8.399,12.997,5.0]; TURBO50
+  ;constant :        [3.0] ; TURBO50
+}
+{wind_direction,
+  constant:          [90.,270.,270.,90.]   ; [degrees] Wind direction value
+  ;constant:          [90.,270.,270.,90.,0.]   ; [degrees] Wind direction value
+}
 
 
 ; --------------------------- Pupil stop ---------------------------

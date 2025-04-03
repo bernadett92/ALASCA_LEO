@@ -1,17 +1,16 @@
 detect_dlms, /par
 
-objectDir = 0.
+objectDir = 90.
 pwfs = 0B
 over = 0B
 
 dir = ROUTINE_DIR()
-params = (read_params_file(dir+'params_alasca_leo_sh_240.pro',/expand))[0]
+params = (read_params_file(dir+'params_alasca_leo_sh.pro',/expand))[0]
 subap_params = read_params_file(dir+'params_alasca_leo_subaps_sh.pro')
 sn_params = read_params_file(dir+'params_alasca_leo_sn_sh.pro')
 intmat_params = read_params_file(dir+'params_alasca_leo_intmat_sh.pro')
 
-;params = update_alasca_leo_params(params, objectDir=objectDir, pwfs=pwfs)
-params.seeing.constant = 1.0
+params = update_alasca_leo_params(params, objectDir=objectDir, pwfs=pwfs)
 
 params.remove, 'launcher'
 params.remove, 'zlayer'
@@ -21,9 +20,9 @@ params.remove, 'lgsttres'
 ; ------------------------- LGS reconstruction matrices ------------------------- 
 params_lgs = duplicate_params(params)
 params_lgs.wfs_source = params_lgs.wfs_source
-params_lgs.sh = params_lgs.sh_lgs
+params_lgs.sh = params_lgs.sh
 params_lgs.detector = params_lgs.detector
-params_lgs.slopec = params_lgs.slopec_lgs
+params_lgs.slopec = params_lgs.slopec
 params_lgs.modalrec = params_lgs.modalrec
 
 intmat_params_lgs = duplicate_params(intmat_params)

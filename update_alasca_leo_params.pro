@@ -7,18 +7,19 @@ function update_alasca_leo_params, params, objectDir=objectDir, pwfs=pwfs
   
   ; calculate point ahead angle based on object height and speed
   pointAheadAngleRad = objectSpeed/299792458d
-  params.wfs_ngs_source.polar_coordinate = [2*pointAheadAngleRad*rad2arcsec,0.]
+  ;params.wfs_ngs_source.polar_coordinate = [2*pointAheadAngleRad*rad2arcsec,0.]
+  ;params.wfs_ngs_source.polar_coordinate = [4.0,0.]
   
   ; consider telescope slewing for LEO case - adapt wind speed and direction based on object speed and direction
-  if params.wfs_ngs_source.height lt 38e6 then begin
-    wind_speed = params.wind_speed.constant
-    wind_direction = params.wind_direction.constant
-    telescope_slewing, (size(params.wind_speed.constant,/dim))[0], params.wfs_ngs_source.height, objectSpeed, $
-    objectDir, pointAheadAngleRad, params.atmo.heights, wind_speed=wind_speed, $
-    wind_direction=wind_direction
-    params.wind_speed.constant = wind_speed
-    params.wind_direction.constant = wind_direction
-  endif
+;  if params.wfs_ngs_source.height lt 38e6 then begin
+;    wind_speed = params.wind_speed.constant
+;    wind_direction = params.wind_direction.constant
+;    telescope_slewing, (size(params.wind_speed.constant,/dim))[0], params.wfs_ngs_source.height, objectSpeed, $
+;    objectDir, pointAheadAngleRad, params.atmo.heights, wind_speed=wind_speed, $
+;    wind_direction=wind_direction
+;    params.wind_speed.constant = wind_speed
+;    params.wind_direction.constant = wind_direction
+;  endif
   
   if params.hasKey('extended_object') then extended_object = params.remove('extended_object')
 
@@ -66,21 +67,21 @@ function update_alasca_leo_params, params, objectDir=objectDir, pwfs=pwfs
     if n_elements(extended_object) gt 0 then params.extended_object = extended_object
   endif else begin
     params_sh_lgs = duplicate_params(params)
-    params_sh_lgs.sh = params_sh_lgs.sh_lgs
+    params_sh_lgs.sh = params_sh_lgs.sh
     params_sh_lgs.detector = params_sh_lgs.detector
-    params_sh_lgs.slopec = params_sh_lgs.slopec_lgs
+    params_sh_lgs.slopec = params_sh_lgs.slopec
 
     give_me_the_tags_scao, params_sh_lgs, params.main.instrument_name, /update_params, new_params=new_params_sh_lgs
-    params.sh_lgs = new_params_sh_lgs.sh
+    params.sh = new_params_sh_lgs.sh
     params.wfs_source = new_params_sh_lgs.wfs_source
-    params.slopec_lgs = new_params_sh_lgs.slopec
+    params.slopec = new_params_sh_lgs.slopec
     params.modalrec = new_params_sh_lgs.modalrec
 
     params_sh_ngs = duplicate_params(params)
     params_sh_ngs.wfs_source = params_sh_ngs.wfs_ngs_source
     params_sh_ngs.sh = params_sh_ngs.sh_ngs
     params_sh_ngs.detector = params_sh_ngs.detector_IR_ngs
-    params_sh_ngs.slopec = params_sh_ngs.slopec_ngs
+    params_sh_ngs.slopec = params_sh_ngs.slopec_IR_ngs
     params_sh_ngs.modalrec = params_sh_ngs.modalrec_IR_ngs
 
     give_me_the_tags_scao, params_sh_ngs, params.main.instrument_name, /update_params, new_params=new_params_sh

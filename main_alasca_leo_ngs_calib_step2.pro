@@ -1,7 +1,7 @@
 detect_dlms, /par
 
 seeing4calib = 1.0
-objectDir = 0.
+objectDir = 90.
 pwfs = 1B
 
 dir = ROUTINE_DIR()

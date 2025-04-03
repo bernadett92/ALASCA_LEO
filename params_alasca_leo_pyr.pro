@@ -3,6 +3,7 @@
  instrument_name:   'ALASCA_LEO'               ; this is 'CaNaPy' to be compatible with the CaNaPy calibration of 589nm path
  pixel_pupil:       120,                   ; Linear dimension of pupil phase array
  pixel_pitch:       0.008333,              ; [m] Pitch of the pupil phase array
+ pad_size:          2048,                   ; number of pixels for zero padding, if smaller than pixle_pupil no padding applied
  total_time:        1.000d,                ; [s] Total simulation running time
  time_step:         0.0005d,                ; [s] Simulation time step
  zenithAngleInDeg:  60.0,
@@ -45,8 +46,8 @@
 }
 {wfs_source,
   polar_coordinate:  [0.0, 0.0],           ; [arcsec, degrees] source polar coordinates
-  magnitude:         5.44,                 ; source magnitude. Uses n_phot.pro
-  zeroPoint:         390.d-10      ; Uses n_phot.pro
+  magnitude:         6.3,                 ; source magnitude. Uses n_phot.pro
+  zeroPoint:         390.d-10              ; Uses n_phot.pro
   wavelengthInNm:    589,                  ; [nm] wavelength
   height:            90000.                ; [m] LGS source altitude
 }
@@ -59,8 +60,8 @@
 }
 ; Satellite downlink
 {wfs_ngs_source,
-  polar_coordinate:  [4.0, 0.0],           ; [arcsec, degrees] source polar coordinates
-  magnitude:         2,                    ; source magnitude. Uses n_phot.pro
+  polar_coordinate:  [0.0, 0.0],           ; [arcsec, degrees] source polar coordinates
+  magnitude:         0,                    ; source magnitude. Uses n_phot.pro
   wavelengthInNm:    1064,                 ; [nm] wavelength
   height:            400e3               ; [m] source altitude
 }
@@ -159,33 +160,44 @@
 {control,
   delay:             1,                     ; Total temporal delay in time steps
   type:              'INT',                 ; type of control 
-  int_gain:         [0.6,0.6,0.4,0.4,replicate(0.3,15)]   ; Integrator gain (for 'INT' control)
+  int_gain:         [0.6,0.6,replicate(0.3,17)]   ; Integrator gain (for 'INT' control)
 }
 {control_IR_ngs,
   delay:             1,                     ; Total temporal delay in time steps
   type:              'INT',                 ; type of control
-  int_gain:         [0.6,0.6,replicate(0.0,17)]   ; Integrator gain (for 'INT' control)
+  ;int_gain:         [0.8,0.8,replicate(0.,17)]    ; Integrator gain (for 'INT' control)
+  int_gain:         [0.8,0.8,replicate(0.4,17)]    ; optgains 
 }
 
 
 ; --------------------------- Atmosphere ---------------------------
 {atmo,
-   L0:                30,                   ; [m] Outer scale
-   heights:           [0,4e3,12e3,20e3] ; Durham 5layer atm
-   Cn2:               [0.769,0.104,0.126,0.0] ; Durham 5layer atm
-   pixel_phasescreens: 32768L*2                ; size of the phase screen array. Max: 32768L ; Default is 8192L
+   L0:                25,                   ; [m] Outer scale
+   ;heights:           [955.53979, 7300.5816, 12353.543, 16227.363, 21897.079] ; Durham 5layer atm
+   ;Cn2:               [0.85374713, 0.049742997, 0.073054083, 0.021873636, 0.0015821513] ; Durham 5layer atm
+   heights:           [0,4e3,12e3,20e3] ; TURBO50
+   Cn2:               [0.769,0.104,0.126,0.0] ; TURBO50
+   ;heights:           [124.34, 7.31e3, 1.26e4, 1.65e4, 2.25e4] ; Durham 5layer atm (daytime)
+   ;Cn2:               [0.9793, 0.0087, 0.0108, 0.0011, 7.7447e-5] ; Durham 5layer atm (daytime) - weights (total must be eq 1)
+   pixel_phasescreens: 2*32768L                ; size of the phase screen array. Max: 32768L ; Default is 8192L
    fov_in_m      :   8
-   infinte_phasescreen : 0B 
+   infinte_phasescreen : 1B 
 }
 {seeing,
-  constant:         0.9759*0.5/(0.06*4.848)   ; ["] seeing=0.9759*0.5/(r0*4.848)
+  constant:        0.9759*0.5/(0.06*4.848)  ; ["] seeing=0.9759*0.5/(r0*4.848), 0.9759*0.5/(0.06*4.848)
+  ;constant:        1.0
 }
+
 {wind_speed,
-  ;constant :        [3.541,84.948,242.644,387.745] ; Durham 5layer atm
-  constant :        [3.541,8.399,12.997,5.0] ; Durham 5layer atm
+  ;constant :        [7.62, 12.52, 10.80, 7.56, 10.45] ; Durham 5layer atm
+  ;constant :        [2.9307, 13.5419, 12.6838, 7.2461, 5.7461] ; Durham 5layer atm
+  ;constant :        [4.2662430,140.14532,241.47957,315.80447] ; TURBO50 slewing
+  constant :        [3.541,8.399,12.997,5.0]; TURBO50
+  ;constant :        [3.0] ; TURBO50
 }
 {wind_direction,
-  constant:         [0.,0.,0.,0.]   ; [degrees] Wind direction value
+  constant:          [90.,270.,270.,90.]   ; [degrees] Wind direction value
+  ;constant:          [90.,270.,270.,90.,0.]   ; [degrees] Wind direction value
 }
 
 

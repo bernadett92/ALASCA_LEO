@@ -2,7 +2,7 @@
 detect_dlms, /parallel
 seeing = 1.0
 seing4calib = 1.0
-objectDir = 0.
+objectDir = 90.
 pwfs = 1B
 
 dir = ROUTINE_DIR()

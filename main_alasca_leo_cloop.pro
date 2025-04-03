@@ -17,7 +17,7 @@ params = read_params_file(dir+params_file)
 ;       -----------------
 ; ********************************************
 seeing4calib = 1.0
-objectDir = 0.
+objectDir = 90.
 pwfs = 1B
 
 ;params.seeing.constant = seeing
@@ -356,7 +356,6 @@ z2 = zern2phi(params.main.pixel_pupil, 2, mask=mask, no_round_mask=no_round_mask
 phase = coeff0*reform(z2[0,*,*])+coeff1*reform(z2[1,*,*])
 psf_sat_ref = calc_psf(phase, congrid(pupstop_up.A,params.main.pixel_pupil,params.main.pixel_pupil), imwidth=spsf, normalize=1B, nocenter=1B, GPU=0B)
 
-
 ; ------------------------- Modal analysis -------------------------
 if params.hasKey('modalanalysis') then begin
   modan_up_589.in_ef = (prop_up_589.pupil_list)[0]
@@ -407,6 +406,15 @@ if params.hasKey('modalanalysis') then begin
 endif
 ; -------------------------
 
+ph_up_disp   = factory.get_phase_display((prop_up_1055.pupil_list)[0])   ; residual phase display for up-ward propagation
+ph_up_disp.window = 11
+ph_up_disp.title = 'PHASE UP'
+ph_up_disp.disp_factor = 2
+
+ph_down_disp = factory.get_phase_display((prop_down_1055.pupil_list)[0]) ; residual phase display for down-ward propagation
+ph_down_disp.window = 14
+ph_down_disp.title = 'PHASE DOWN'
+ph_down_disp.disp_factor = 2
 
 
 ; ********************************************
@@ -494,6 +502,8 @@ if params.hasKey('modalanalysis') then begin
   endif
 endif
 loop.add, store
+loop.add, ph_up_disp
+loop.add, ph_down_disp
 
 
 ; ********************************************
