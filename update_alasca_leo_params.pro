@@ -2,24 +2,23 @@ function update_alasca_leo_params, params, objectDir=objectDir, pwfs=pwfs
 
   rad2arcsec = 3600.*180./!pi
   
-  if params.wfs_ngs_source.height lt 38e6 then objectSpeed = 7.6549062e3 $
+  if params.wfs_ngs_source.height lt 38e6 then objectSpeed = 0.5*7.6549062e3 $
     else objectSpeed = 3.0e3
   
   ; calculate point ahead angle based on object height and speed
   pointAheadAngleRad = objectSpeed/299792458d
-  ;params.wfs_ngs_source.polar_coordinate = [2*pointAheadAngleRad*rad2arcsec,0.]
-  ;params.wfs_ngs_source.polar_coordinate = [4.0,0.]
+  params.wfs_ngs_source.polar_coordinate = [2*pointAheadAngleRad*rad2arcsec,180.]
   
   ; consider telescope slewing for LEO case - adapt wind speed and direction based on object speed and direction
-;  if params.wfs_ngs_source.height lt 38e6 then begin
-;    wind_speed = params.wind_speed.constant
-;    wind_direction = params.wind_direction.constant
-;    telescope_slewing, (size(params.wind_speed.constant,/dim))[0], params.wfs_ngs_source.height, objectSpeed, $
-;    objectDir, pointAheadAngleRad, params.atmo.heights, wind_speed=wind_speed, $
-;    wind_direction=wind_direction
-;    params.wind_speed.constant = wind_speed
-;    params.wind_direction.constant = wind_direction
-;  endif
+  if params.wfs_ngs_source.height lt 38e6 then begin
+    wind_speed = params.wind_speed.constant
+    wind_direction = params.wind_direction.constant
+    telescope_slewing, (size(params.wind_speed.constant,/dim))[0], params.wfs_ngs_source.height, objectSpeed, $
+    objectDir, pointAheadAngleRad, params.atmo.heights, wind_speed=wind_speed, $
+    wind_direction=wind_direction
+    params.wind_speed.constant = wind_speed
+    params.wind_direction.constant = wind_direction
+  endif
   
   if params.hasKey('extended_object') then extended_object = params.remove('extended_object')
 
@@ -76,6 +75,7 @@ function update_alasca_leo_params, params, objectDir=objectDir, pwfs=pwfs
     params.wfs_source = new_params_sh_lgs.wfs_source
     params.slopec = new_params_sh_lgs.slopec
     params.modalrec = new_params_sh_lgs.modalrec
+   
 
     params_sh_ngs = duplicate_params(params)
     params_sh_ngs.wfs_source = params_sh_ngs.wfs_ngs_source

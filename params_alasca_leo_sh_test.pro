@@ -4,7 +4,7 @@
  pixel_pupil:       120,                   ; Linear dimension of pupil phase array
  pixel_pitch:       0.008333,              ; [m] Pitch of the pupil phase array
  total_time:        0.0100d,                ; [s] Total simulation running time
- time_step:         0.0005d,                ; [s] Simulation time step
+ time_step:         0.00001,                ; [s] Simulation time step
  zenithAngleInDeg:  75.0,
  precision:         0,
  verbose:           0B
@@ -157,7 +157,7 @@
   delay:             1,                     ; Total temporal delay in time steps
   type:              'INT',                 ; type of control
   ;int_gain:         [0.8,0.8,0.,0.,replicate(0.,4)]    ; Integrator gain (for 'INT' control)
-  int_gain:        0*[0.5,0.5,replicate(0.,3)]    ; optgains 
+  int_gain:        [0.5,0.5,replicate(0.,3)]    ; optgains 
 }
 
 
@@ -240,11 +240,21 @@
 
 {aberration,
   func_type          :'SIN',              ; type of function, see classes/func_generator__define.pro
-  constant           : [0,0,0],   ; aberration modal vector in nm RMS, 160.3751 (=10murad), 320.7501 (=20murad), 481.1252 (=30murad) ()
+  constant           : [0,0,320.7501],   ; aberration modal vector in nm RMS, 160.3751 (=10murad), 320.7501 (=20murad), 481.1252 (=30murad) ()
   height             : 0.,                ; conjugation altitude of the aberration
   dm_type            : 'zernike',
   pupil_mask_tag     : 'ALASCA_20cm_120p_down'
   nmodes             : 3,               ; number of modes starting from the first one of the selected modal base
   verbose            : 0B
+}
+
+{dithering,
+  func_type          :'VIB_PSD',
+  vib_data           : 'test',
+  continuous_psd     : 1B,
+  nmodes             : 3,
+  height             : 0
+  dm_type            : 'zernike',
+  pupil_mask_tag     : 'ALASCA_20cm_120p_down'
 }
 

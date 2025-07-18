@@ -1,7 +1,7 @@
 {calib_source,
   polar_coordinate:    [0.0, 0.0],           ; [arcsec, degrees] source polar coordinates
   magnitude:           3,                    ; source magnitude
-  wavelengthInNm:      589                   ; [nm] wavelength
+  wavelengthInNm:      1064                   ; [nm] wavelength
 }
 
 {detector,
